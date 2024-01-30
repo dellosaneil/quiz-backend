@@ -9,26 +9,49 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-
 fun Route.questionsRouting() {
     val dao: QuestionDAOFacade = QuestionDAOFacadeImpl()
 
     route("/question") {
         get {
-            val question = dao.getQuestion(1) ?: Question(question = "emptyQ", answer = "emptyA", id = 1)
+            val id = call.request.queryParameters["id"]?.toIntOrNull() ?: return@get
+            val question = dao.getQuestion(id) ?: return@get
             call.respond(
-                HttpStatusCode.OK,
-                question
+                status = HttpStatusCode.OK,
+                message = question
             )
         }
         post("/insert") {
-            val question = call.receive<Question>()
-            val q = dao.insertQuestion(
-                newQuestion = question
+            val questionParam = call.receive<Question>()
+            val addedQuestion = dao.insertQuestion(
+                newQuestion = questionParam
             )
+            if (addedQuestion == null) {
+                call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    message = "Question cannot be added"
+                )
+                return@post
+            }
             call.respond(
                 status = HttpStatusCode.OK,
-                message = q!!
+                message = addedQuestion
+            )
+        }
+        get("/all") {
+            val questions = dao.allQuestions()
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = questions
+            )
+        }
+        patch {
+            val id = call.request.queryParameters["id"]?.toIntOrNull() ?: return@patch
+            val updatedQuestion = call.receive<Question>()
+            dao.updateQuestion(id = id, updatedQuestion = updatedQuestion)
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = "Question Updated"
             )
         }
     }

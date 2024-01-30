@@ -7,4 +7,5 @@ interface QuestionDAOFacade {
     suspend fun getQuestion(id: Int) : Question?
     suspend fun allQuestions(): List<Question>
     suspend fun clearQuestions()
+    suspend fun updateQuestion(id: Int, updatedQuestion: Question)
 }

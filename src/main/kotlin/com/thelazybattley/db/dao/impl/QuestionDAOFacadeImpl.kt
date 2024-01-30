@@ -36,4 +36,11 @@ class QuestionDAOFacadeImpl : QuestionDAOFacade {
     override suspend fun clearQuestions() {
         Questions.deleteAll()
     }
+
+    override suspend fun updateQuestion(id: Int, updatedQuestion: Question) {
+        Questions.update({ Questions.id eq id }) {
+            it[question] = updatedQuestion.question
+            it[answer] = updatedQuestion.answer
+        }
+    }
 }
