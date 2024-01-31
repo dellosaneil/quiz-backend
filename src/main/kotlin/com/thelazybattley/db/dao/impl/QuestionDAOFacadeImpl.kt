@@ -13,7 +13,8 @@ class QuestionDAOFacadeImpl : QuestionDAOFacade {
     private fun resultRowToQuestion(row: ResultRow) = QuestionEntity(
         question = row[QuestionsEntity.question],
         answer = row[QuestionsEntity.answer],
-        choices = row[QuestionsEntity.choices]
+        choices = row[QuestionsEntity.choices],
+        type = row[QuestionsEntity.type]
     )
 
     override suspend fun insertQuestion(newQuestion: QuestionEntity): Question? = dbQuery {
@@ -21,6 +22,7 @@ class QuestionDAOFacadeImpl : QuestionDAOFacade {
             it[question] = newQuestion.question
             it[answer] = newQuestion.answer
             it[choices] = newQuestion.choices
+            it[type] = newQuestion.type
         }
         getQuestion(id = id.value)
     }
@@ -34,7 +36,7 @@ class QuestionDAOFacadeImpl : QuestionDAOFacade {
     }
 
     override suspend fun allQuestions() = dbQuery {
-        QuestionsEntity.selectAll().map(::resultRowToQuestion)
+        QuestionsEntity.selectAll().map(::resultRowToQuestion).map { it.toQuestion }
     }
 
     override suspend fun clearQuestions() {
@@ -46,6 +48,7 @@ class QuestionDAOFacadeImpl : QuestionDAOFacade {
             it[question] = updatedQuestion.question
             it[answer] = updatedQuestion.answer
             it[choices] = updatedQuestion.choices
+            it[type] = updatedQuestion.type
         }
     }
 }

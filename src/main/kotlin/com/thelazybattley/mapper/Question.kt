@@ -9,7 +9,10 @@ import kotlinx.serialization.json.Json
 val QuestionPayload.toEntity
     get() = run {
         QuestionEntity(
-            question = question, answer = answer, choices = Json.encodeToString(choices)
+            question = question,
+            answer = answer,
+            choices = Json.encodeToString(choices),
+            type = type
         )
     }
 
@@ -18,6 +21,7 @@ val QuestionEntity.toQuestion
         Question(
             question = question,
             answer = answer,
-            choices = Json.decodeFromString(choices)
+            choices = Json.decodeFromString(choices),
+            type = type
         )
     }

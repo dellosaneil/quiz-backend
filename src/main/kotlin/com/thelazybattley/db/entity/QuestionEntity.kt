@@ -6,11 +6,13 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 data class QuestionEntity(
     val question: String,
     val answer: String,
-    val choices: String
+    val choices: String,
+    val type: String
 )
 
 object QuestionsEntity : IntIdTable() {
-    val question = varchar("question", 255)
-    val answer = varchar("answer", 255)
+    val question = text("question")
+    val answer = text("answer")
     val choices = text("choices")
+    val type = text("type")
 }
