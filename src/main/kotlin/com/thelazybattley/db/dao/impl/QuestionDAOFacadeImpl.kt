@@ -2,45 +2,50 @@ package com.thelazybattley.db.dao.impl
 
 import com.thelazybattley.db.dao.QuestionDAOFacade
 import com.thelazybattley.db.dbQuery
+import com.thelazybattley.db.entity.QuestionEntity
+import com.thelazybattley.db.entity.QuestionsEntity
+import com.thelazybattley.mapper.toQuestion
 import com.thelazybattley.models.Question
-import com.thelazybattley.models.Questions
 import org.jetbrains.exposed.sql.*
 
 class QuestionDAOFacadeImpl : QuestionDAOFacade {
-    private fun resultRowToQuestion(row: ResultRow) = Question(
-        id = row[Questions.id],
-        question = row[Questions.question],
-        answer = row[Questions.answer]
+
+    private fun resultRowToQuestion(row: ResultRow) = QuestionEntity(
+        question = row[QuestionsEntity.question],
+        answer = row[QuestionsEntity.answer],
+        choices = row[QuestionsEntity.choices]
     )
 
-
-    override suspend fun insertQuestion(newQuestion: Question): Question? = dbQuery {
-        val q = Questions.insert {
+    override suspend fun insertQuestion(newQuestion: QuestionEntity): Question? = dbQuery {
+        val id = QuestionsEntity.insertAndGetId {
             it[question] = newQuestion.question
             it[answer] = newQuestion.answer
+            it[choices] = newQuestion.choices
         }
-        q.resultedValues?.singleOrNull()?.let(::resultRowToQuestion)
+        getQuestion(id = id.value)
     }
 
-    override suspend fun getQuestion(id: Int) = dbQuery {
-        Questions
-            .select { Questions.id eq id }
+    override suspend fun getQuestion(id: Int) = run {
+        QuestionsEntity
+            .select { QuestionsEntity.id eq id }
             .map(::resultRowToQuestion)
             .singleOrNull()
+            ?.toQuestion
     }
 
     override suspend fun allQuestions() = dbQuery {
-        Questions.selectAll().map(::resultRowToQuestion)
+        QuestionsEntity.selectAll().map(::resultRowToQuestion)
     }
 
     override suspend fun clearQuestions() {
-        Questions.deleteAll()
+        QuestionsEntity.deleteAll()
     }
 
-    override suspend fun updateQuestion(id: Int, updatedQuestion: Question) {
-        Questions.update({ Questions.id eq id }) {
+    override suspend fun updateQuestion(id: Int, updatedQuestion: QuestionEntity) {
+        QuestionsEntity.update({ QuestionsEntity.id eq id }) {
             it[question] = updatedQuestion.question
             it[answer] = updatedQuestion.answer
+            it[choices] = updatedQuestion.choices
         }
     }
 }

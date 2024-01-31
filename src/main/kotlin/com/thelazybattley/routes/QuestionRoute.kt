@@ -2,12 +2,16 @@ package com.thelazybattley.routes
 
 import com.thelazybattley.db.dao.QuestionDAOFacade
 import com.thelazybattley.db.dao.impl.QuestionDAOFacadeImpl
-import com.thelazybattley.models.Question
+import com.thelazybattley.db.dbQuery
+import com.thelazybattley.db.entity.QuestionEntity
+import com.thelazybattley.mapper.toEntity
+import com.thelazybattley.payloads.QuestionPayload
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+
 
 fun Route.questionsRouting() {
     val dao: QuestionDAOFacade = QuestionDAOFacadeImpl()
@@ -15,18 +19,18 @@ fun Route.questionsRouting() {
     route("/question") {
         get {
             val id = call.request.queryParameters["id"]?.toIntOrNull() ?: return@get
-            val question = dao.getQuestion(id) ?: return@get
+            val question = dbQuery { dao.getQuestion(id) } ?: return@get
             call.respond(
                 status = HttpStatusCode.OK,
                 message = question
             )
         }
         post("/insert") {
-            val questionParam = call.receive<Question>()
-            val addedQuestion = dao.insertQuestion(
-                newQuestion = questionParam
+            val questionParam = call.receive<QuestionPayload>()
+            val question = dao.insertQuestion(
+                newQuestion = questionParam.toEntity
             )
-            if (addedQuestion == null) {
+            if (question == null) {
                 call.respond(
                     status = HttpStatusCode.BadRequest,
                     message = "Question cannot be added"
@@ -35,7 +39,7 @@ fun Route.questionsRouting() {
             }
             call.respond(
                 status = HttpStatusCode.OK,
-                message = addedQuestion
+                message = question
             )
         }
         get("/all") {
@@ -47,7 +51,7 @@ fun Route.questionsRouting() {
         }
         patch {
             val id = call.request.queryParameters["id"]?.toIntOrNull() ?: return@patch
-            val updatedQuestion = call.receive<Question>()
+            val updatedQuestion = call.receive<QuestionEntity>()
             dao.updateQuestion(id = id, updatedQuestion = updatedQuestion)
             call.respond(
                 status = HttpStatusCode.OK,

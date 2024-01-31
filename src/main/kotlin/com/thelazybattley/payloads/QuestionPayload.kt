@@ -1,9 +1,9 @@
-package com.thelazybattley.models
+package com.thelazybattley.payloads
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Question(
+data class QuestionPayload(
     val question: String,
     val answer: String,
     val choices: List<String>
